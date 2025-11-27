@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_spl::{associated_token::AssociatedToken, token::{Mint, Token, TokenAccount}};
 
 declare_id!("BWYxEA3HTy5Kv7LCTWH68yN52a7aZMMPFCaUrWGmFtfK");
 
@@ -80,4 +80,52 @@ pub struct PoolAccount {
 
 impl PoolAccount {
     pub const LEN: usize = 8 + PoolAccount::INIT_SPACE;
+}
+
+#[derive(Accounts)]
+pub struct AddLiquidity<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(mut, 
+        seeds = [b"pool", pool_account.token_a_mint.as_ref(), pool_account.token_b_mint.as_ref()],
+        bump = pool_account.bump
+    )] // Needs mut because we change amounts
+    pub pool_account: Account<'info, PoolAccount>,
+
+    #[account(
+        mut,
+        seeds = [b"vault", pool_account.key().as_ref(), pool_account.token_a_mint.as_ref()],
+        bump,
+        token::mint = pool_account.token_a_mint,
+        token::authority = pool_account
+    )]
+    pub vault_a: Account<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        seeds = [b"vault", pool_account.key().as_ref(), pool_account.token_b_mint.as_ref()],
+        bump,
+        token::mint = pool_account.token_b_mint,
+        token::authority = pool_account
+    )]
+    pub vault_b: Account<'info, TokenAccount>,
+
+    #[account(mut)]
+    pub lp_token_mint: Account<'info, Mint>,
+
+    // --- YOUR TURN: Add the 3 User Accounts here ---
+    #[account(mut, token::mint = pool_account.token_a_mint, token::authority = signer)]
+    pub user_a_token: Account<'info, TokenAccount>,
+    // 2. user_token_b (Must match pool's token_b_mint)
+    #[account(mut, token::mint = pool_account.token_b_mint, token::authority = signer)]
+    pub user_b_token: Account<'info, TokenAccount>,
+    // 3. user_lp_token_account (Must match pool's lp_token_mint)
+    #[account(mut, token::mint = pool_account.lp_token_mint, token::authority = signer)]
+    pub user_lp_token_account: Account<'info, TokenAccount>,
+    // ...
+
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub system_program: Program<'info, System>,
 }
