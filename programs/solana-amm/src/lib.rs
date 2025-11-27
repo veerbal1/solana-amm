@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::Mint;
+use anchor_spl::token::{Mint, Token, TokenAccount};
 
 declare_id!("BWYxEA3HTy5Kv7LCTWH68yN52a7aZMMPFCaUrWGmFtfK");
 
@@ -22,6 +22,8 @@ pub mod solana_amm {
         pool_state.token_b_amount = 0;
         pool_state.token_b_mint = ctx.accounts.token_b_mint.key();
         pool_state.bump = ctx.bumps.pool_account;
+
+        msg!("Pool Initialized! Token A: {}, Token B: {}", pool_state.token_a_mint, pool_state.token_b_mint);
         Ok(())
     }
 }
@@ -44,9 +46,18 @@ pub struct InitializePool<'info> {
 
     pub token_b_mint: Account<'info, Mint>,
 
+    #[account(init, payer = signer, seeds = [b"lp", pool_account.key().as_ref()], bump, mint::decimals = 6, mint::authority = pool_account)]
     pub lp_token_mint: Account<'info, Mint>,
 
+    #[account(init, seeds=[b"vault", pool_account.key().as_ref(), token_a_mint.key().as_ref()], bump ,token::mint = token_a_mint, token::authority = pool_account, payer = signer)]
+    pub vault_a: Account<'info, TokenAccount>,
+
+    #[account(init, seeds=[b"vault", pool_account.key().as_ref(), token_b_mint.key().as_ref()], bump ,token::mint = token_b_mint, token::authority = pool_account, payer = signer)]
+    pub vault_b: Account<'info, TokenAccount>,
+
     pub system_program: Program<'info, System>,
+
+    pub token_program: Program<'info, Token>
 }
 
 // THE ROBOT'S MEMORY
