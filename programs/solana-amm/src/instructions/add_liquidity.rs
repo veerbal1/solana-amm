@@ -1,11 +1,11 @@
+use crate::errors::*;
+use crate::state::pool::PoolAccount;
 use anchor_lang::prelude::*;
+use anchor_spl::token::{self, MintTo, Transfer};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, Token, TokenAccount},
 };
-use crate::errors::*;
-use crate::state::pool::PoolAccount;
-use anchor_spl::token::{self, MintTo, Transfer};
 
 #[derive(Accounts)]
 pub struct AddLiquidity<'info> {

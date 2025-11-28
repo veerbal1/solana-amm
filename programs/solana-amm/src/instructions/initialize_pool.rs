@@ -1,9 +1,7 @@
-use anchor_lang::prelude::*;
-use crate::state::pool::PoolAccount;
 use crate::errors::*;
-use anchor_spl::{
-    token::{Mint, Token, TokenAccount},
-};
+use crate::state::pool::PoolAccount;
+use anchor_lang::prelude::*;
+use anchor_spl::token::{Mint, Token, TokenAccount};
 
 pub fn initialize_pool(ctx: Context<InitializePool>) -> Result<()> {
     let pool_state = &mut ctx.accounts.pool_account;
